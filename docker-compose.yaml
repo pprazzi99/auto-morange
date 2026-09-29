@@ -1,0 +1,62 @@
+# auto-morange - produkcyjny docker compose (gotowy obraz z GHCR, bez klonowania repo)
+#
+#   curl -fsSLO https://raw.githubusercontent.com/pprazzi99/auto-morange/main/docker-compose.yaml
+#   docker compose up auto-morange-login     # jednorazowo: logowanie w panelu WWW
+#   docker compose up -d                     # harmonogram
+#
+# Konfiguracja: opcjonalny plik .env obok tego pliku (wzór: .env.example w repozytorium).
+
+x-common: &common
+  image: ghcr.io/pprazzi99/auto-morange:${AUTO_MORANGE_TAG:-latest}
+  env_file:
+    - path: .env
+      required: false
+  volumes:
+    # Domyślnie wolumen Dockera; ścieżka zaczynająca się od ./ lub / = katalog na hoście
+    # (np. AUTO_MORANGE_DATA=./data, wtedy: sudo chown 1000:1000 data).
+    - ${AUTO_MORANGE_DATA:-auto-morange-data}:/data
+  # Chromium potrzebuje więcej niż domyślne 64 MB /dev/shm
+  shm_size: 256m
+  init: true
+  read_only: true
+  tmpfs:
+    - /tmp
+    - /home/app:uid=1000,gid=1000
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  pids_limit: 512
+  mem_limit: ${AUTO_MORANGE_MEM_LIMIT:-1536m}
+  stop_grace_period: 30s
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+services:
+  # Odbiór rabatu wg CRON_SCHEDULE (domyślnie 3. dnia miesiąca o 9:00)
+  auto-morange:
+    <<: *common
+    container_name: auto-morange
+    restart: unless-stopped
+    command: ["cron"]
+
+  # Panel WWW do logowania - tylko na żądanie (profil "login"):
+  #   docker compose up auto-morange-login
+  auto-morange-login:
+    <<: *common
+    container_name: auto-morange-login
+    profiles: ["login"]
+    restart: "no"
+    command: ["login"]
+    environment:
+      LOGIN_PUBLIC_URL: http://127.0.0.1:${LOGIN_HOST_PORT:-8080}
+    ports:
+      # Tylko localhost. Z innego komputera: ssh -L 8080:127.0.0.1:8080 serwer
+      - "127.0.0.1:${LOGIN_HOST_PORT:-8080}:8080"
+
+volumes:
+  auto-morange-data:
+    name: auto-morange-data

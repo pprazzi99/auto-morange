@@ -1,0 +1,7 @@
+# Do obrazu trafia wyłącznie to, co jawnie wymienione niżej (allowlist),
+# więc .env, data/, state.json, zrzuty ani .git nie mogą wyciec do warstw obrazu.
+*
+!orange_rabat.py
+!orange_login.py
+!requirements.txt
+!docker-entrypoint.sh

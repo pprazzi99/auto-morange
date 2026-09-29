@@ -1,0 +1,26 @@
+# Nakładka dla deweloperów: lokalne budowanie obrazu z kodu w repozytorium
+# i dane w ./data zamiast wolumenu Dockera.
+#
+#   docker compose -f docker-compose.yaml -f docker-compose.build.yaml build
+#   docker compose -f docker-compose.yaml -f docker-compose.build.yaml up auto-morange-login
+#
+# Albo raz na sesję: export COMPOSE_FILE=docker-compose.yaml:docker-compose.build.yaml
+
+x-build: &build
+  image: auto-morange:local
+  build:
+    context: .
+    args:
+      UID: ${APP_UID:-1000}
+      GID: ${APP_GID:-1000}
+  volumes:
+    - ./data:/data
+  tmpfs:
+    - /tmp
+    - /home/app:uid=${APP_UID:-1000},gid=${APP_GID:-1000}
+
+services:
+  auto-morange:
+    <<: *build
+  auto-morange-login:
+    <<: *build

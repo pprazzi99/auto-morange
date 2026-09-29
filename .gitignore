@@ -1,0 +1,34 @@
+# --- Sekrety i dane lokalne: NIGDY nie commitować -------------------------------
+# Konfiguracja z hasłami (wzorzec do skopiowania: .env.example)
+.env
+.env.*
+*.env
+!.env.example
+
+# Sesja przeglądarki (ciasteczka = dostęp do konta Orange), zrzuty ekranu, logi
+data/
+state.json
+config.env
+*.tmp
+.orange-rabat/
+.orange-profile/
+*.png
+*.log
+
+# Nagrania z "playwright codegen" - zawierają wpisane login i hasło
+nagranie*.py
+
+# Lokalne nadpisania docker compose (mogą zawierać ścieżki/sekrety)
+docker-compose.override.yml
+compose.override.yaml
+
+# --- Python ------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# --- Edytory / system -------------------------------------------------------------
+.vscode/
+.idea/
+.DS_Store
